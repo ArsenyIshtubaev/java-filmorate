@@ -5,14 +5,14 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
+import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.Set;
 
 @RestController
 @Slf4j
 @RequestMapping("/users")
-public class UserController {
+public class UserController extends Controller<User>{
 
     private final Set<User> users = new HashSet<>();
 
@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) throws ValidationException {
+    public User create(@Valid @RequestBody User user) throws ValidationException {
         log.info("Получен запрос к эндпоинту: '{} {}', Пользователь: Логин: {} и Email: {}", "POST", "/users",
                 user.getLogin(), user.getEmail());
         validation(user);
@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User user) throws ValidationException {
+    public User update(@Valid @RequestBody User user) throws ValidationException {
         log.info("Получен запрос к эндпоинту: '{} {}', Пользователь: Логин: {} и Email: {}", "PUT", "/users",
                 user.getLogin(), user.getEmail());
         validation(user);
@@ -52,11 +52,15 @@ public class UserController {
         if (user.getId()==null){
             user.setId(users.size()+1l);
         }
-        if (user.getEmail().isBlank() || user.getEmail() == null || !user.getEmail().contains("@") ||
+        if (user.getLogin().contains(" ") && !user.getLogin().isBlank()) {
+            log.info("Пользователь не прошел валидацию.");
+            throw new ValidationException("Пользователь не прошел валидацию.");
+        }
+        /*if (user.getEmail().isBlank() || user.getEmail() == null || !user.getEmail().contains("@") ||
                 user.getLogin().isBlank() || user.getLogin().contains(" ") ||
                 user.getBirthday().isAfter(LocalDate.now())) {
             log.info("Пользователь не прошел валидацию.");
             throw new ValidationException("Пользователь не прошел валидацию.");
-        }
+        }*/
     }
 }

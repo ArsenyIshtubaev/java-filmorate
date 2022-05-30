@@ -1,25 +1,31 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.Duration;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class FilmorateApplicationTests {
+
+    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Autowired
     private FilmController filmController;
@@ -54,13 +60,12 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldReturnExceptionWithIncorreсtName() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.create(Film.builder().id(1l).name(" ").description("Описание")
+        Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
                     .releaseDate(LocalDate.of(2012, 12, 5))
                     .duration(2)
                     .build());
-        });
-        assertNotNull(thrown.getMessage());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty());
     }
 
     @Test
@@ -69,13 +74,12 @@ class FilmorateApplicationTests {
         while (str.length() != 201) {
             str.append("r");
         }
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.create(Film.builder().id(1l).name(" ").description(String.valueOf(str))
+        Film film = filmController.create(Film.builder().id(1l).name(" ").description(String.valueOf(str))
                     .releaseDate(LocalDate.of(2012, 12, 5))
                     .duration(2)
                     .build());
-        });
-        assertNotNull(thrown.getMessage());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
     }
 
     @Test
@@ -99,22 +103,24 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnExceptionWithDurationZeroOrNegative() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.create(Film.builder().id(1l).name(" ").description("Описание")
+    public void shouldReturnExceptionWithDurationZero() throws ValidationException {
+        Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
                     .releaseDate(LocalDate.of(2012, 12, 5))
                     .duration(0)
                     .build());
-        });
-        assertNotNull(thrown.getMessage());
-        Throwable thrown2 = assertThrows(ValidationException.class, () -> {
-            filmController.create(Film.builder().id(1l).name(" ").description("Описание")
-                    .releaseDate(LocalDate.of(2012, 12, 5))
-                    .duration(-2)
-                    .build());
-        });
-        assertNotNull(thrown2.getMessage());
+            Set<ConstraintViolation<Film>> violations = validator.validate(film);
+            assertFalse(violations.isEmpty());
     }
+    @Test
+    public void shouldReturnExceptionWithDurationNegative() throws ValidationException {
+        Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
+                .releaseDate(LocalDate.of(2012, 12, 5))
+                .duration(-2)
+                .build());
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+    }
+
     @Test
     public void shouldReturnUserWithPost() throws ValidationException {
         User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
@@ -138,41 +144,38 @@ class FilmorateApplicationTests {
 
     @Test
     public void shouldReturnExceptionWithEmptyEmail() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.create(User.builder().id(1l).email(" ").login("login")
+        User user = userController.create(User.builder().id(1l).email(" ").login("login")
                     .name("Ivan")
                     .birthday(LocalDate.of(1992, 9, 20))
                     .build());
-        });
-        assertNotNull(thrown.getMessage());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
     }
     @Test
     public void shouldReturnExceptionWithIncorreсtEmail() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.create(User.builder().id(1l).email("user.yandex.ru").login("login")
+            User user = userController.create(User.builder().id(1l).email("user.yandex.ru").login("login")
                     .name("Ivan")
                     .birthday(LocalDate.of(1992, 9, 20))
                     .build());
-        });
-        assertNotNull(thrown.getMessage());
+            Set<ConstraintViolation<User>> violations = validator.validate(user);
+            assertFalse(violations.isEmpty());
     }
     @Test
     public void shouldReturnExceptionWithIncorreсtLogin() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.create(User.builder().id(1l).email("user@yandex.ru").login(" ")
+            User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login(" ")
                     .name("Ivan")
                     .birthday(LocalDate.of(1992, 9, 20))
                     .build());
-        });
-        assertNotNull(thrown.getMessage());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
     }
     @Test
     public void shouldReturnExceptionWithIncorreсtLogin2() throws ValidationException {
         Throwable thrown = assertThrows(ValidationException.class, () -> {
             userController.create(User.builder().id(1l).email("user@yandex.ru").login("log in ")
-                    .name("Ivan")
-                    .birthday(LocalDate.of(1992, 9, 20))
-                    .build());
+                            .name("Ivan")
+                            .birthday(LocalDate.of(1992, 9, 20))
+                            .build());
         });
         assertNotNull(thrown.getMessage());
     }
@@ -186,13 +189,12 @@ class FilmorateApplicationTests {
     }
     @Test
     public void shouldReturnNullWithIncorreсtBirthday() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.create(User.builder().id(1l).email("user@yandex.ru").login("log in ")
+        User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
                     .name("Ivan")
                     .birthday(LocalDate.of(2100, 9, 20))
                     .build());
-        });
-        assertNotNull(thrown.getMessage());
+            Set<ConstraintViolation<User>> violations = validator.validate(user);
+            assertFalse(violations.isEmpty());
     }
 
 }
