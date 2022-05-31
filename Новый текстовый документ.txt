@@ -1,0 +1,23 @@
+User:
+{
+  "id": 1,
+  "email": "yandex@mail.ru",
+  "login": "login1",
+  "name": "Ars",
+  "birthday": "1992-09-20"
+}
+Films:
+    {
+        "id": 1,
+        "name": "Test Film",
+        "description": "Описание",
+        "releaseDate": "2001-04-03",
+        "duration": "PT3M20S"
+    }
+    {
+        "id": 2,
+        "name": "Test Film2",
+        "description": "Описание2",
+        "releaseDate": "2001-04-03",
+        "duration": "PT9367H14M48S"
+    }
