@@ -26,7 +26,7 @@ public class FilmController extends Controller<Film> {
     @PostMapping
     public Film create(@Valid @RequestBody Film film) throws ValidationException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "POST", "/films", film.getName());
-        validation(film);
+        validate(film);
         films.add(film);
         return film;
     }
@@ -34,7 +34,7 @@ public class FilmController extends Controller<Film> {
     @PutMapping
     public Film update(@Valid @RequestBody Film film) throws ValidationException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "PUT", "/films", film.getName());
-        validation(film);
+        validate(film);
             for (Film film1 : films) {
                 if (film1.getId() == film.getId()) {
                     films.remove(film1);
@@ -45,7 +45,8 @@ public class FilmController extends Controller<Film> {
         throw new ValidationException("Параметры фильма не прошли валидацию.");
     }
 
-    private void validation (Film film) throws ValidationException {
+    @Override
+    public void validate (Film film) throws ValidationException {
         if (film.getId() == null) {
             film.setId(films.size() + 1l);
         }

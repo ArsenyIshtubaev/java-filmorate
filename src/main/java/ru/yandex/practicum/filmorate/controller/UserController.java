@@ -12,7 +12,7 @@ import java.util.Set;
 @RestController
 @Slf4j
 @RequestMapping("/users")
-public class UserController extends Controller<User>{
+public class UserController extends Controller<User> {
 
     private final Set<User> users = new HashSet<>();
 
@@ -25,7 +25,7 @@ public class UserController extends Controller<User>{
     public User create(@Valid @RequestBody User user) throws ValidationException {
         log.info("Получен запрос к эндпоинту: '{} {}', Пользователь: Логин: {} и Email: {}", "POST", "/users",
                 user.getLogin(), user.getEmail());
-        validation(user);
+        validate(user);
         users.add(user);
         return user;
     }
@@ -34,7 +34,7 @@ public class UserController extends Controller<User>{
     public User update(@Valid @RequestBody User user) throws ValidationException {
         log.info("Получен запрос к эндпоинту: '{} {}', Пользователь: Логин: {} и Email: {}", "PUT", "/users",
                 user.getLogin(), user.getEmail());
-        validation(user);
+        validate(user);
         for (User user1 : users) {
             if (user1.getId() == user.getId()) {
                 users.remove(user1);
@@ -44,13 +44,13 @@ public class UserController extends Controller<User>{
         }
         throw new ValidationException("Пользователь не прошел валидацию.");
     }
-
-    private void validation(User user) throws ValidationException {
+    @Override
+    public void validate(User user) throws ValidationException {
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        if (user.getId()==null){
-            user.setId(users.size()+1l);
+        if (user.getId() == null) {
+            user.setId(users.size() + 1l);
         }
         if (user.getLogin().contains(" ") && !user.getLogin().isBlank()) {
             log.info("Пользователь не прошел валидацию.");
