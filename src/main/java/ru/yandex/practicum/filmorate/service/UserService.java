@@ -39,6 +39,10 @@ public class UserService {
         return userStorage.update(user);
     }
 
+    public void deleteAllUsers(){
+        userStorage.findAll().clear();
+    }
+
     public void addFriend(Long userId, Long friendId) throws StorageException {
 
         if (findUserById(userId).getFriends() == null) {

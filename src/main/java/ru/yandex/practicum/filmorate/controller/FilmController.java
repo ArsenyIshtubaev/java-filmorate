@@ -42,6 +42,11 @@ public class FilmController {
         filmService.validate(film);
         return filmService.update(film);
     }
+
+    @DeleteMapping
+    public void deleteAllFilms(){
+        filmService.deleteAllFilms();
+    }
    // GET .../users/{id}
    @GetMapping ("/{id}")
    public Film findFilm(@PathVariable Long id) throws StorageException {

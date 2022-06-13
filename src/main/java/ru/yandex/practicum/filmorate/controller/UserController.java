@@ -44,6 +44,11 @@ public class UserController {
         return userService.update(user);
     }
 
+    @DeleteMapping
+    public void deleteAllUsers(){
+        userService.deleteAllUsers();
+    }
+
     //GET .../users/{id}
     @GetMapping("/{id}")
     public User findUser(@PathVariable Long id) throws StorageException {

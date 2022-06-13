@@ -36,6 +36,10 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
+    public void deleteAllFilms(){
+        filmStorage.findAll().clear();
+    }
+
     public void addLike(Long filmId, Long userId) throws StorageException {
         findFilmById(filmId).getLikes().add(userId);
         filmStorage.update(findFilmById(filmId));

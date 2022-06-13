@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,11 +30,21 @@ class FilmorateApplicationTests {
 
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    @Autowired
-    private FilmController filmController;
+    private final FilmController filmController;
+
+    private final UserController userController;
 
     @Autowired
-    private UserController userController;
+    public FilmorateApplicationTests(FilmController filmController, UserController userController) {
+        this.filmController = filmController;
+        this.userController = userController;
+    }
+
+    @AfterEach
+    public void clearStorage(){
+        filmController.deleteAllFilms();
+        userController.deleteAllUsers();
+    }
 
     @Test
     void contextLoads() {
