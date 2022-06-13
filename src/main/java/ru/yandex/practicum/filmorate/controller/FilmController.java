@@ -17,26 +17,30 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
 
+    private final FilmService filmService;
+
     @Autowired
-    private FilmService filmService;
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public List<Film> findAll() {
-        return filmService.getFilmStorage().findAll();
+        return filmService.findAll();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) throws ValidationException, IsInStorageException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "POST", "/films", film.getName());
         filmService.validate(film);
-        return filmService.getFilmStorage().create(film);
+        return filmService.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) throws ValidationException, StorageException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "PUT", "/films", film.getName());
         filmService.validate(film);
-        return filmService.getFilmStorage().update(film);
+        return filmService.update(film);
     }
    // GET .../users/{id}
    @GetMapping ("/{id}")

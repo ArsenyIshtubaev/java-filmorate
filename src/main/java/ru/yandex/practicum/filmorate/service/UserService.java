@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -17,11 +18,25 @@ import java.util.Set;
 @Service
 public class UserService {
 
-    @Autowired
-    private InMemoryUserStorage userStorage;
+    private final InMemoryUserStorage userStorage;
 
-    public InMemoryUserStorage getUserStorage() {
-        return userStorage;
+    @Autowired
+    public UserService(InMemoryUserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
+
+    public Set<User> findAll() {
+        return userStorage.findAll();
+    }
+
+    public User create(User user) throws IsInStorageException, ValidationException {
+        validate(user);
+        return userStorage.create(user);
+    }
+
+    public User update(User user) throws StorageException, ValidationException {
+        validate(user);
+        return userStorage.update(user);
     }
 
     public void addFriend(Long userId, Long friendId) throws StorageException {

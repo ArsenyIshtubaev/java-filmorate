@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -16,11 +17,23 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
 
-    @Autowired
-    private InMemoryFilmStorage filmStorage;
+    private final InMemoryFilmStorage filmStorage;
 
-    public InMemoryFilmStorage getFilmStorage() {
-        return filmStorage;
+    @Autowired
+    public FilmService(InMemoryFilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
+    }
+
+    public List<Film> findAll() {
+        return filmStorage.findAll();
+    }
+
+    public Film create(Film film) throws IsInStorageException{
+        return filmStorage.create(film);
+    }
+
+    public Film update(Film film) throws StorageException{
+        return filmStorage.update(film);
     }
 
     public void addLike(Long filmId, Long userId) throws StorageException {
