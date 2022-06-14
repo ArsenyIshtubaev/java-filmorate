@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate;
 
 import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
+import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -27,18 +30,28 @@ class FilmorateApplicationTests {
 
     private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-    @Autowired
-    private FilmController filmController;
+    private final FilmController filmController;
+
+    private final UserController userController;
 
     @Autowired
-    private UserController userController;
+    public FilmorateApplicationTests(FilmController filmController, UserController userController) {
+        this.filmController = filmController;
+        this.userController = userController;
+    }
+
+    @AfterEach
+    public void clearStorage(){
+        filmController.deleteAllFilms();
+        userController.deleteAllUsers();
+    }
 
     @Test
     void contextLoads() {
     }
 
     @Test
-    public void shouldReturnFilmWithPost() throws ValidationException {
+    public void shouldReturnFilmWithPost() throws ValidationException, IsInStorageException {
         Film film = filmController.create(Film.builder().id(1l).name("film1").description("Описание")
                 .releaseDate(LocalDate.of(2012, 12, 5))
                 .duration(2)
@@ -47,7 +60,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnFilmWithPut() throws ValidationException {
+    public void shouldReturnFilmWithPut() throws ValidationException, IsInStorageException, StorageException {
         Film film = filmController.create(Film.builder().id(1l).name("film1").description("Описание")
                 .releaseDate(LocalDate.of(2012, 12, 5))
                 .duration(2)
@@ -59,7 +72,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnExceptionWithIncorreсtName() throws ValidationException {
+    public void shouldReturnExceptionWithIncorreсtName() throws ValidationException, IsInStorageException {
         Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
                     .releaseDate(LocalDate.of(2012, 12, 5))
                     .duration(2)
@@ -69,7 +82,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnExceptionWithLenghtDescription201() throws ValidationException {
+    public void shouldReturnExceptionWithLenghtDescription201() throws ValidationException, IsInStorageException {
         StringBuilder str = new StringBuilder("");
         while (str.length() != 201) {
             str.append("r");
@@ -83,7 +96,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnFilmWithDate28_12_1895() throws ValidationException {
+    public void shouldReturnFilmWithDate28_12_1895() throws ValidationException, IsInStorageException {
         Film film = filmController.create(Film.builder().id(1l).name("film1").description("Описание")
                 .releaseDate(LocalDate.of(1895, 12, 28))
                 .duration(2)
@@ -103,7 +116,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnExceptionWithDurationZero() throws ValidationException {
+    public void shouldReturnExceptionWithDurationZero() throws ValidationException, IsInStorageException {
         Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
                     .releaseDate(LocalDate.of(2012, 12, 5))
                     .duration(0)
@@ -112,7 +125,7 @@ class FilmorateApplicationTests {
             assertFalse(violations.isEmpty());
     }
     @Test
-    public void shouldReturnExceptionWithDurationNegative() throws ValidationException {
+    public void shouldReturnExceptionWithDurationNegative() throws ValidationException, IsInStorageException {
         Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
                 .releaseDate(LocalDate.of(2012, 12, 5))
                 .duration(-2)
@@ -122,7 +135,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnUserWithPost() throws ValidationException {
+    public void shouldReturnUserWithPost() throws ValidationException, IsInStorageException {
         User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
                 .name("Ivan")
                 .birthday(LocalDate.of(1992, 9, 20))
@@ -131,7 +144,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnUserWithPut() throws ValidationException {
+    public void shouldReturnUserWithPut() throws ValidationException, StorageException, IsInStorageException {
         User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
                 .name("Ivan")
                 .birthday(LocalDate.of(1992, 9, 20))
@@ -143,7 +156,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void shouldReturnExceptionWithEmptyEmail() throws ValidationException {
+    public void shouldReturnExceptionWithEmptyEmail() throws ValidationException, IsInStorageException {
         User user = userController.create(User.builder().id(1l).email(" ").login("login")
                     .name("Ivan")
                     .birthday(LocalDate.of(1992, 9, 20))
@@ -152,7 +165,7 @@ class FilmorateApplicationTests {
         assertFalse(violations.isEmpty());
     }
     @Test
-    public void shouldReturnExceptionWithIncorreсtEmail() throws ValidationException {
+    public void shouldReturnExceptionWithIncorreсtEmail() throws ValidationException, IsInStorageException {
             User user = userController.create(User.builder().id(1l).email("user.yandex.ru").login("login")
                     .name("Ivan")
                     .birthday(LocalDate.of(1992, 9, 20))
@@ -161,7 +174,7 @@ class FilmorateApplicationTests {
             assertFalse(violations.isEmpty());
     }
     @Test
-    public void shouldReturnExceptionWithIncorreсtLogin() throws ValidationException {
+    public void shouldReturnExceptionWithIncorreсtLogin() throws ValidationException, IsInStorageException {
             User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login(" ")
                     .name("Ivan")
                     .birthday(LocalDate.of(1992, 9, 20))
@@ -180,7 +193,7 @@ class FilmorateApplicationTests {
         assertNotNull(thrown.getMessage());
     }
     @Test
-    public void shouldReturnLoginWithEmptyName() throws ValidationException {
+    public void shouldReturnLoginWithEmptyName() throws ValidationException, IsInStorageException {
         User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
                 .name("")
                 .birthday(LocalDate.of(1992, 9, 20))
@@ -188,7 +201,7 @@ class FilmorateApplicationTests {
         assertEquals(user.getName(), user.getLogin());
     }
     @Test
-    public void shouldReturnNullWithIncorreсtBirthday() throws ValidationException {
+    public void shouldReturnNullWithIncorreсtBirthday() throws ValidationException, IsInStorageException {
         User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
                     .name("Ivan")
                     .birthday(LocalDate.of(2100, 9, 20))

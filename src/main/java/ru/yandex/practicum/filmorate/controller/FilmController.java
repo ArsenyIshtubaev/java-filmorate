@@ -1,67 +1,70 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
+import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @Slf4j
 @RequestMapping("/films")
-public class FilmController extends Controller<Film> {
+public class FilmController {
 
-    private final Set<Film> films = new HashSet<>();
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
-    public Set<Film> findAll() {
-        return films;
+    public List<Film> findAll() {
+        return filmService.findAll();
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) throws ValidationException {
+    public Film create(@Valid @RequestBody Film film)
+            throws ValidationException, IsInStorageException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "POST", "/films", film.getName());
-        validate(film);
-        films.add(film);
-        return film;
+        return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film film) throws ValidationException {
+    public Film update(@Valid @RequestBody Film film) throws ValidationException, StorageException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "PUT", "/films", film.getName());
-        validate(film);
-            for (Film film1 : films) {
-                if (film1.getId() == film.getId()) {
-                    films.remove(film1);
-                    films.add(film);
-                    return film;
-                }
-            }
-        throw new ValidationException("Параметры фильма не прошли валидацию.");
+        return filmService.update(film);
     }
 
-    @Override
-    public void validate (Film film) throws ValidationException {
-        if (film.getId() == null) {
-            film.setId(films.size() + 1l);
-        }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))){
-            //film.getDuration().isNegative() || film.getDuration().isZero()) {
-            log.info("Параметры фильма не прошли валидацию.");
-            throw new ValidationException("Параметры фильма не прошли валидацию.");
-        }
-        /*if (film.getName().isBlank() || film.getName() == null || film.getDescription().length() > 200 ||
-                film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28)) ||
-                film.getDuration()<=0){
-                //film.getDuration().isNegative() || film.getDuration().isZero()) {
-            log.info("Параметры фильма не прошли валидацию.");
-            throw new ValidationException("Параметры фильма не прошли валидацию.");
-        } */
+    @DeleteMapping
+    public void deleteAllFilms(){
+        filmService.deleteAllFilms();
+    }
+   // GET .../users/{id}
+   @GetMapping ("/{id}")
+   public Film findFilm(@PathVariable Long id) throws StorageException {
+           return filmService.findFilmById(id);
+       }
+    //PUT /films/{id}/like/{userId}
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) throws StorageException {
+        filmService.addLike(id, userId);
+    }
+    //DELETE /films/{id}/like/{userId}
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) throws StorageException {
+        filmService.removeLike(id, userId);
+    }
+    //GET /films/popular?count={count}
+    @GetMapping("/popular")
+    public List<Film> printTopFilms(@RequestParam(defaultValue = "10") int count){
+        return filmService.printTopFilms(count);
     }
 
 }
