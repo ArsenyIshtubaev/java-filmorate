@@ -10,7 +10,7 @@ public interface FilmStorage {
 
     List<Film> findAll();
 
-    Film create(Film film) throws StorageException, IsInStorageException;
+    Film create(Film film) throws IsInStorageException;
 
     Film update(Film film) throws StorageException;
 

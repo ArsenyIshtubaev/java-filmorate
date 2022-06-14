@@ -30,16 +30,15 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) throws ValidationException, IsInStorageException {
+    public Film create(@Valid @RequestBody Film film)
+            throws ValidationException, IsInStorageException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "POST", "/films", film.getName());
-        filmService.validate(film);
         return filmService.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) throws ValidationException, StorageException {
         log.info("Получен запрос к эндпоинту: '{} {}', Название фильма: '{}'", "PUT", "/films", film.getName());
-        filmService.validate(film);
         return filmService.update(film);
     }
 

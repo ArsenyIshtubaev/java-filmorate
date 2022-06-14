@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
@@ -17,10 +18,10 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
 
-    private final InMemoryFilmStorage filmStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public FilmService(InMemoryFilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
@@ -28,11 +29,13 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
-    public Film create(Film film) throws IsInStorageException{
+    public Film create(Film film) throws IsInStorageException, ValidationException {
+        validate(film);
         return filmStorage.create(film);
     }
 
-    public Film update(Film film) throws StorageException{
+    public Film update(Film film) throws StorageException, ValidationException {
+        validate(film);
         return filmStorage.update(film);
     }
 
