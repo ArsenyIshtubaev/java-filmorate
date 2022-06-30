@@ -9,10 +9,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -46,13 +43,13 @@ public class UserService {
     public void addFriend(Long userId, Long friendId) throws StorageException {
 
         if (findUserById(userId).getFriends() == null) {
-            findUserById(userId).setFriends(new HashSet<>());
+            findUserById(userId).setFriends(new HashMap<>());
         }
         if (findUserById(friendId).getFriends() == null) {
-            findUserById(friendId).setFriends(new HashSet<>());
+            findUserById(friendId).setFriends(new HashMap<>());
         }
-        findUserById(userId).getFriends().add(friendId);
-        findUserById(friendId).getFriends().add(userId);
+        findUserById(userId).getFriends().put(friendId, true);
+        findUserById(friendId).getFriends().put(userId, true);
         userStorage.update(findUserById(userId));
         userStorage.update(findUserById(friendId));
     }
