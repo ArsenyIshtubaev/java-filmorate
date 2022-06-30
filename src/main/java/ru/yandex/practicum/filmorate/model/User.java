@@ -6,6 +6,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -23,7 +24,7 @@ public class User {
     private String name;
     @Past
     private final LocalDate birthday;
-    private Set<Long> friends = new HashSet<>();
+    private HashMap<Long, Boolean> friends = new HashMap();
 
     @Override
     public boolean equals(Object o) {

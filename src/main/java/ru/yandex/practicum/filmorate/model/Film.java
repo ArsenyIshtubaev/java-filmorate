@@ -1,11 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import ru.yandex.practicum.filmorate.enums.Genre;
+import ru.yandex.practicum.filmorate.enums.MPA;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -24,6 +28,8 @@ public class Film {
     private final LocalDate releaseDate;
     @Positive
     private Integer duration;
+    private final List<Genre> genre;
+    private final MPA mpa;
     private final Set<Long> likes = new HashSet<>();
 
     @Override
