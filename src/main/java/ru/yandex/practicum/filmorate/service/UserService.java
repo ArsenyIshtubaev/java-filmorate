@@ -65,12 +65,12 @@ public class UserService {
         List<User> listCommonFriends = new ArrayList<>();
         Set<Long> commonFriends = new HashSet<>();
         if (findUserById(id1).getFriends() != null) {
-            commonFriends.addAll(findUserById(id1).getFriends());
+            commonFriends.addAll(findUserById(id1).getFriends().keySet());
             if (!findUserById(id2).getFriends().isEmpty()) {
-                commonFriends.retainAll(findUserById(id2).getFriends());
+                commonFriends.retainAll(findUserById(id2).getFriends().keySet());
             }
         } else if (findUserById(id2).getFriends() != null) {
-            commonFriends.addAll(findUserById(id2).getFriends());
+            commonFriends.addAll(findUserById(id2).getFriends().keySet());
         } else {
             return listCommonFriends;
         }
@@ -102,7 +102,7 @@ public class UserService {
         if (findUserById(id).getFriends() == null) {
             return friends;
         }
-        for (Long friendId : findUserById(id).getFriends()) {
+        for (Long friendId : findUserById(id).getFriends().keySet()) {
             friends.add(findUserById(friendId));
         }
         return friends;
