@@ -7,11 +7,12 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.Set;
 
 public interface UserStorage {
 
-    Set<User> findAll();
+    Collection<User> findAll();
 
     User create(User user) throws IsInStorageException;
 

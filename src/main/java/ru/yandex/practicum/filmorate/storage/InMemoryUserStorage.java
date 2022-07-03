@@ -5,17 +5,19 @@ import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
-    private Set<User> users = new HashSet<>();
+    private Collection<User> users = new ArrayList<>();
     private Long id = 0l;
 
     @Override
-    public Set<User> findAll() {
+    public Collection<User> findAll() {
         return users;
     }
 

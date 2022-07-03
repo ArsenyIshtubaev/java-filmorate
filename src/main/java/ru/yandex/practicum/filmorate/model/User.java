@@ -10,10 +10,8 @@ import java.util.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @Builder
 public class User {
-    private Long id;
     @Email
     private String email;
     @NotBlank
@@ -22,6 +20,13 @@ public class User {
     @Past
     private final LocalDate birthday;
     private Map<Long, Boolean> friends = new HashMap();
+
+    public User(String email, String login, String name, LocalDate birthday) {
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
 
     @Override
     public boolean equals(Object o) {
