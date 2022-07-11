@@ -12,6 +12,8 @@ import java.util.*;
 @Setter
 @Builder
 public class User {
+
+    private long id;
     @Email
     private String email;
     @NotBlank
@@ -19,9 +21,11 @@ public class User {
     private String name;
     @Past
     private final LocalDate birthday;
-    private Map<Long, Boolean> friends = new HashMap();
+    //private Map<String, Boolean> friends;
 
-    public User(String email, String login, String name, LocalDate birthday) {
+
+    public User(long id, String email, String login, String name, LocalDate birthday) {
+        this.id = id;
         this.email = email;
         this.login = login;
         this.name = name;
@@ -33,11 +37,11 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return email.equals(user.email);
+        return Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email);
+        return Objects.hash(id);
     }
 }

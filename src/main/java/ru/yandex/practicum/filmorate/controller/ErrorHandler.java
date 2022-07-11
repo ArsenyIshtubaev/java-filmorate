@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -32,6 +33,13 @@ public class ErrorHandler {
     public ErrorResponse handleThrowableException(final Throwable e) {
         return new ErrorResponse(
                 "Произошла непредвиденная ошибка."
+        );
+    }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDataBaseException(final DuplicateKeyException e) {
+        return new ErrorResponse(
+                "Объект с заданным ключом уже есть в Базе данных"
         );
     }
 

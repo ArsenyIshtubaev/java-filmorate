@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
@@ -18,93 +19,38 @@ public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
-
-    public Set<User> findAll() {
+    public Collection<User> findAll() {
         return userStorage.findAll();
     }
-
-    public User create(User user) throws IsInStorageException, ValidationException {
+    public User create(User user) throws ValidationException {
         validate(user);
         return userStorage.create(user);
     }
-
-    public User update(User user) throws StorageException, ValidationException {
+    public User update(User user) throws ValidationException, StorageException {
         validate(user);
         return userStorage.update(user);
     }
-
     public void deleteAllUsers(){
-        userStorage.findAll().clear();
+        userStorage.deleteAll();
     }
 
-    public void addFriend(Long userId, Long friendId) throws StorageException {
-
-        if (findUserById(userId).getFriends() == null) {
-            findUserById(userId).setFriends(new HashMap<>());
-        }
-        if (findUserById(friendId).getFriends() == null) {
-            findUserById(friendId).setFriends(new HashMap<>());
-        }
-        findUserById(userId).getFriends().put(friendId, true);
-        findUserById(friendId).getFriends().put(userId, true);
-        userStorage.update(findUserById(userId));
-        userStorage.update(findUserById(friendId));
+    public User findUserById(long id) throws StorageException {
+        return userStorage.findById(id);
     }
-
-    public void removeFriend(Long userId, Long friendId) throws StorageException {
-        findUserById(userId).getFriends().remove(friendId);
-        findUserById(friendId).getFriends().remove(userId);
-        userStorage.update(findUserById(userId));
-        userStorage.update(findUserById(friendId));
+    public boolean deleteUserById(long id){
+        return userStorage.delete(id);
     }
-
-    public List<User> printCommonFriends(Long id1, Long id2) throws StorageException {
-        List<User> listCommonFriends = new ArrayList<>();
-        Set<Long> commonFriends = new HashSet<>();
-        if (findUserById(id1).getFriends() != null) {
-            commonFriends.addAll(findUserById(id1).getFriends().keySet());
-            if (!findUserById(id2).getFriends().isEmpty()) {
-                commonFriends.retainAll(findUserById(id2).getFriends().keySet());
-            }
-        } else if (findUserById(id2).getFriends() != null) {
-            commonFriends.addAll(findUserById(id2).getFriends().keySet());
-        } else {
-            return listCommonFriends;
-        }
-        for (Long friendId : commonFriends) {
-            listCommonFriends.add(findUserById(friendId));
-        }
-        return listCommonFriends;
-    }
-
     public void validate(User user) throws ValidationException {
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        if (user.getLogin().contains(" ") && !user.getLogin().isBlank()) {
+        if (user.getLogin().contains(" ") && !user.getLogin().isBlank())  {
             log.info("Пользователь не прошел валидацию.");
             throw new ValidationException("Пользователь не прошел валидацию.");
         }
     }
 
-    public User findUserById(Long id) throws StorageException {
-        return userStorage.findAll().stream()
-                .filter(o -> o.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new StorageException("Пользователя с id = " + id + " нет в хранилище"));
-    }
-
-    public List<User> findAllFriends(Long id) throws StorageException {
-        List<User> friends = new ArrayList<>();
-        if (findUserById(id).getFriends() == null) {
-            return friends;
-        }
-        for (Long friendId : findUserById(id).getFriends().keySet()) {
-            friends.add(findUserById(friendId));
-        }
-        return friends;
-    }
 }
