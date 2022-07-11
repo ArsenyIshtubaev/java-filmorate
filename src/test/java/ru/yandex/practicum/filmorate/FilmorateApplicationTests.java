@@ -44,12 +44,10 @@ class FilmorateApplicationTests {
 
     @Test
     public void testFilmStorage() throws StorageException {
-        MPA mpa = mpaStorage.create(MPA.builder().name("G")
-                .build());
         Film film = filmStorage.create(Film.builder().name("film1").description("Описание")
                 .releaseDate(LocalDate.of(2012, 12, 5))
                 .duration(2)
-                .mpa(mpa)
+                .mpa(mpaStorage.findById(1))
                 .build());
         assertEquals(filmStorage.findById(1l), film);
         assertEquals(film.getName(), "film1");
@@ -59,25 +57,13 @@ class FilmorateApplicationTests {
         assertEquals("film2", filmStorage.findById(film.getId()).getName());
     }
     @Test
-    public void testMPAStorage(){
-        MPA mpa2 = mpaStorage.create(MPA.builder().name("PG")
-                .build());
-        assertEquals(mpaStorage.findById(mpa2.getId()), mpa2);
-        assertEquals(mpa2.getName(), "PG");
-        assertEquals(mpaStorage.findAll().size(), 1);
-        mpa2.setName("PG-13");
-        mpaStorage.update(mpa2);
-        assertEquals("PG-13", mpaStorage.findById(mpa2.getId()).getName());
+    public void testMPAStorage() throws StorageException {
+        assertEquals(mpaStorage.findById(1).getName(), "G");
+        assertEquals(mpaStorage.findAll().size(), 5);
     }
     @Test
-    public void testGenresStorage(){
-        Genre genre = genreStorage.create(Genre.builder().name("Комедия")
-                .build());
-        assertEquals(genreStorage.findById(1), genre);
-        assertEquals(genre.getName(), "Комедия");
-        assertEquals(genreStorage.findAll().size(), 1);
-        genre.setName("Боевик");
-        genreStorage.update(genre);
-        assertEquals("Боевик", genreStorage.findById(genre.getId()).getName());
+    public void testGenresStorage() throws StorageException {
+        assertEquals(genreStorage.findById(1).getName(), "Комедия");
+        assertEquals(genreStorage.findAll().size(), 6);
     }
 }
