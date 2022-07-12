@@ -19,19 +19,19 @@ public class FriendService {
     }
 
     public void addFriend(long userId, long friendId) throws StorageException {
-        friendStorage.addFriend(userId, friendId);
+            friendStorage.addFriend(userId, friendId);
     }
 
     public boolean deleteFriend(long userId, long friendId){
         return friendStorage.deleteFriend(userId, friendId);
     }
 
-    public Collection<User> printCommonFriends(long userId, long friendId) {
+   /* public Collection<User> printCommonFriends(long userId, long friendId) {
         return friendStorage.printCommonFriends(userId, friendId);
-    }
+    } */
 
-    public Collection<User> findAllFriends(long userId){
-        return friendStorage.findAllFriends(userId);
+    public Collection<Long> findAllIdFriends(long userId){
+        return friendStorage.findAllIdFriends(userId);
     }
 
 }

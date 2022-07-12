@@ -6,10 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.GenreService;
+import ru.yandex.practicum.filmorate.service.MPAService;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
@@ -22,48 +27,48 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
 
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
-    private final MPAStorage mpaStorage;
-    private final GenreStorage genreStorage;
+    private final UserService userService;
+    private final FilmService filmService;
+    private final MPAService mpaService;
+    private final GenreService genreService;
 
     @Test
-    public void testUserStorage() throws StorageException {
-        User user = userStorage.create(User.builder().email("user@yandex.ru").login("login")
+    public void testUserStorage() throws StorageException, ValidationException {
+        User user = userService.create(User.builder().email("user@yandex.ru").login("login")
                 .name("Ivan")
                 .birthday(LocalDate.of(1992, 9, 20))
                 .build());
-        assertEquals(userStorage.findById(1), user);
+        assertEquals(userService.findUserById(1), user);
         assertEquals(user.getEmail(), "user@yandex.ru");
-        assertEquals(userStorage.findAll().size(), 1);
+        assertEquals(userService.findAll().size(), 1);
         user.setEmail("ya123@ya.ru");
-        userStorage.update(user);
-        assertEquals("ya123@ya.ru", userStorage.findById(user.getId()).getEmail());
-        userStorage.delete(user.getId());
+        userService.update(user);
+        assertEquals("ya123@ya.ru", userService.findUserById(user.getId()).getEmail());
+        userService.deleteUserById(user.getId());
     }
 
     @Test
-    public void testFilmStorage() throws StorageException {
-        Film film = filmStorage.create(Film.builder().name("film1").description("Описание")
+    public void testFilmStorage() throws StorageException, ValidationException {
+        Film film = filmService.create(Film.builder().name("film1").description("Описание")
                 .releaseDate(LocalDate.of(2012, 12, 5))
                 .duration(2)
-                .mpa(mpaStorage.findById(1))
+                .mpa(mpaService.findMPAById(1))
                 .build());
-        assertEquals(filmStorage.findById(1l), film);
+        assertEquals(filmService.findFilmById(1l), film);
         assertEquals(film.getName(), "film1");
-        assertEquals(filmStorage.findAll().size(), 1);
+        assertEquals(filmService.findAll().size(), 1);
         film.setName("film2");
-        filmStorage.update(film);
-        assertEquals("film2", filmStorage.findById(film.getId()).getName());
+        filmService.update(film);
+        assertEquals("film2", filmService.findFilmById(film.getId()).getName());
     }
     @Test
     public void testMPAStorage() throws StorageException {
-        assertEquals(mpaStorage.findById(1).getName(), "G");
-        assertEquals(mpaStorage.findAll().size(), 5);
+        assertEquals(mpaService.findMPAById(1).getName(), "G");
+        assertEquals(mpaService.findAll().size(), 5);
     }
     @Test
     public void testGenresStorage() throws StorageException {
-        assertEquals(genreStorage.findById(1).getName(), "Комедия");
-        assertEquals(genreStorage.findAll().size(), 6);
+        assertEquals(genreService.findGenreById(1).getName(), "Комедия");
+        assertEquals(genreService.findAll().size(), 6);
     }
 }

@@ -18,54 +18,39 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage{
 
     private final JdbcTemplate jdbcTemplate;
-    private final GenreDbStorage genreDbStorage;
 
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, GenreDbStorage genreDbStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.genreDbStorage = genreDbStorage;
     }
 
-    public Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
-        Film film = new Film(rs.getLong("FILM_ID"),
+    @Override
+    public Film makeFilm(ResultSet rs, int rowNum) throws SQLException, StorageException {
+        return new Film(rs.getLong("FILM_ID"),
                 rs.getString("FILM_NAME"),
                 rs.getString("DESCRIPTION"),
                 rs.getDate("RELEASE_DATE").toLocalDate(),
                 rs.getInt("DURATION"),
-                null,
+                new MPA(rs.getInt("MPA_ID"),
+                        rs.getString("MPA_NAME")),
                 null
                 );
-            String sql = "select * from MPA where MPA_ID = ?";
-            film.setMpa(jdbcTemplate.queryForObject(sql, this::makeMPA, rs.getInt("MPA_ID")));
-            String sql2 = "select GENRE_ID from FILM_GENRE where FILM_ID = " + film.getId();
-            List<Integer> genresIdList = jdbcTemplate.queryForList(sql2, Integer.class);
-        List<Genre> genres = new ArrayList<>();
-        genres.addAll(genresIdList.stream().map(id -> {
-            try {
-                return genreDbStorage.findById(id);
-            } catch (StorageException e) {
-                throw new RuntimeException(e);
-            }
-        }).distinct().collect(Collectors.toList()));
-        film.setGenres(genres);
-        return film;
-    }
-    public MPA makeMPA (ResultSet rs, int rowNum) throws SQLException {
-        return new MPA(rs.getInt("MPA_ID"),
-                rs.getString("MPA_NAME"));
-    }
-    public Genre makeGenre(ResultSet rs, int rowNum) throws SQLException {
-        return new Genre(rs.getInt("GENRE_ID"),
-        rs.getString("GENRE"));
     }
     @Override
-    public Collection<Film> findAll() {
-        String sql = "select * from FILMS";
-       return jdbcTemplate.query(sql, this::makeFilm);
+    public Collection<Film> findAll() throws StorageException {
+        String sql = "select * from FILMS join MPA M on M.MPA_ID = FILMS.MPA_ID";
+       return jdbcTemplate.query(sql, (rs, rowNum) -> {
+           try {
+               return makeFilm(rs, rowNum);
+           } catch (StorageException e) {
+               throw new RuntimeException(e);
+           }
+       });
     }
 
     @Override
     public Film create(Film film) {
-        String sqlQuery = "insert into FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) values (?, ?, ?, ?, ?)";
+        String sqlQuery = "insert into FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID)"
+                +" values (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"FILM_ID"});
@@ -94,7 +79,6 @@ public class FilmDbStorage implements FilmStorage{
     }
     @Override
     public Film update(Film film) throws StorageException {
-        if (findAll().contains(film)) {
             String sqlQuery = "update FILMS set " +
                     "FILM_NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? " +
                     "where FILM_ID = ?";
@@ -120,16 +104,20 @@ public class FilmDbStorage implements FilmStorage{
                 }
                 film.setGenres(genres);
             }
-        } else {
-            throw new StorageException("Данного пользователя нет в БД");
-        }
+
         return film;
     }
 
     @Override
     public Film findById(long id) throws StorageException {
-        String sqlQuery = "select * from FILMS where FILM_ID = ?";
-        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm, id);
+        String sqlQuery = "select * from FILMS join MPA M on M.MPA_ID = FILMS.MPA_ID where FILM_ID = ? ";
+        List<Film> films = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> {
+            try {
+                return makeFilm(rs, rowNum);
+            } catch (StorageException e) {
+                throw new RuntimeException(e);
+            }
+        }, id);
         if (films.size() != 1) {
             throw new StorageException("Фильма с таким id нет в базе данных");
         }

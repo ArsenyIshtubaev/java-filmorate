@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-public class GenreDbStorage implements GenreStorage{
+public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -27,6 +27,7 @@ public class GenreDbStorage implements GenreStorage{
         String sql = "select * from GENRE";
         return jdbcTemplate.query(sql, this::makeGenre);
     }
+
     private Genre makeGenre(ResultSet resultSet, int i) throws SQLException {
         return new Genre(resultSet.getInt("GENRE_ID"),
                 resultSet.getString("GENRE"));
@@ -47,24 +48,20 @@ public class GenreDbStorage implements GenreStorage{
 
     @Override
     public Genre update(Genre genre) throws StorageException {
-        if (findAll().contains(genre)) {
-            String sqlQuery = "update GENRE set " +
-                    "GENRE = ? where GENRE_ID = ?";
-            jdbcTemplate.update(sqlQuery
-                    , genre.getName()
-                    , genre.getId());
-            return genre;
-        } else {
-            throw new StorageException("Данного жанра нет в БД");
-        }
+        String sqlQuery = "update GENRE set " +
+                "GENRE = ? where GENRE_ID = ?";
+        jdbcTemplate.update(sqlQuery
+                , genre.getName()
+                , genre.getId());
+        return genre;
     }
 
     @Override
     public Genre findById(Integer id) throws StorageException {
         String sqlQuery = "select * from GENRE where GENRE_ID = ?";
-        List<Genre> genres = jdbcTemplate.query(sqlQuery, this::makeGenre, id);
+        List<Genre> genres =  jdbcTemplate.query(sqlQuery, this::makeGenre, id);
         if (genres.size() != 1) {
-            throw new StorageException("Рейтинга с таким id нет в базе данных");
+            throw new StorageException("Жанра с таким id нет в базе данных");
         }
         return genres.get(0);
     }
@@ -79,5 +76,12 @@ public class GenreDbStorage implements GenreStorage{
     public void deleteAll() {
         String sqlQuery = "drop table GENRE CASCADE";
         jdbcTemplate.update(sqlQuery);
+    }
+
+    @Override
+    public List<Genre> findGenreByFilmId(long filmId) {
+        String sqlQuery = "select g.GENRE_ID, g.GENRE from GENRE as g "+
+                "join FILM_GENRE as fg on g.GENRE_ID = fg.GENRE_ID where fg.FILM_ID = ?";
+        return jdbcTemplate.query(sqlQuery, this::makeGenre, filmId);
     }
 }

@@ -59,7 +59,11 @@ public class UserController {
     //PUT /users/{id}/friends/{friendId}
    @PutMapping("/{userId}/friends/{friendId}")
     public void addFriend(@PathVariable long userId, @PathVariable long friendId) throws StorageException {
-        friendService.addFriend(userId, friendId);
+       if (userService.findUserById(userId) != null && userService.findUserById(friendId) != null) {
+           friendService.addFriend(userId, friendId);
+       } else {
+           throw new StorageException("Пользователей с такими Id нет в базе данных");
+       }
     }
 
     // DELETE /users/{id}/friends/{friendId}
@@ -71,13 +75,13 @@ public class UserController {
     //GET /users/{id}/friends
     @GetMapping("/{userId}/friends")
     public Collection<User> findFriends(@PathVariable long userId) throws StorageException {
-        return friendService.findAllFriends(userId);
+        return userService.findAllFriends(userId);
     }
 
     //GET /users/{id}/friends/common/{otherId}
     @GetMapping("/{userId}/friends/common/{friendId}")
     public Collection<User> findCommonFriends(@PathVariable long userId, @PathVariable long friendId)
     {
-        return friendService.printCommonFriends(userId, friendId);
+        return userService.printCommonFriends(userId, friendId);
     }
 }

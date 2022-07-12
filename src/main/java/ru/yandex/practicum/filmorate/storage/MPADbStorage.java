@@ -47,16 +47,12 @@ public class MPADbStorage implements MPAStorage{
 
     @Override
     public MPA update(MPA mpa) throws StorageException {
-        if (findAll().contains(mpa)) {
             String sqlQuery = "update MPA set " +
                     "MPA_NAME = ? where MPA_ID = ?";
             jdbcTemplate.update(sqlQuery
                     , mpa.getName()
                     , mpa.getId());
             return mpa;
-        } else {
-            throw new StorageException("Данного рейтинга нет в БД");
-        }
     }
 
     @Override

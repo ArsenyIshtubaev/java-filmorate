@@ -22,6 +22,7 @@ public class MPAController {
 
     @GetMapping
     public Collection<MPA> findAll() {
+        log.info("Получен запрос к эндпоинту: '{} {}'", "GET", "/mpa");
         return mpaService.findAll();
     }
     @PostMapping
@@ -31,20 +32,23 @@ public class MPAController {
     }
     @PutMapping
     public MPA update(@RequestBody MPA mpa) throws StorageException {
-        log.info("Получен запрос к эндпоинту: '{} {}'", "PUT", "/users");
+        log.info("Получен запрос к эндпоинту: '{} {}'", "PUT", "/mpa");
         return mpaService.update(mpa);
     }
     @DeleteMapping
     public void deleteAllMPA(){
+        log.info("Получен запрос к эндпоинту: '{} {}'", "DELETE", "/mpa");
         mpaService.deleteAllMPA();
     }
 
     @GetMapping("/{id}")
     public MPA findMPA(@PathVariable Integer id) throws StorageException {
+        log.info("Получен запрос к эндпоинту: '{} {}'", "GET", "/mpa/{id}");
         return mpaService.findMPAById(id);
     }
     @DeleteMapping("/{id}")
     public void deleteMPAById(@PathVariable Integer id){
+        log.info("Получен запрос к эндпоинту: '{} {}'", "DELETE", "/mpa/{id}");
         mpaService.deleteMPAById(id);
     }
 }

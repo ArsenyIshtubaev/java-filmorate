@@ -12,25 +12,13 @@ import java.util.List;
 @Component
 public class FriendDbStorage implements FriendStorage{
     private final JdbcTemplate jdbcTemplate;
-    private final UserDbStorage userDbStorage;
 
     public FriendDbStorage(JdbcTemplate jdbcTemplate, UserDbStorage userDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
-        this.userDbStorage = userDbStorage;
     }
 
     @Override
-    public void addFriend(long userId, long friendId) throws StorageException {
-        String sqlQuery1 = "select * from USERS where USER_ID = ?";
-        List<User> users1 = jdbcTemplate.query(sqlQuery1, userDbStorage::makeUser, userId);
-        if (users1.size() != 1) {
-            throw new StorageException("Пользователя с таким userId нет в базе данных");
-        }
-        String sqlQuery2 = "select * from USERS where USER_ID = ?";
-        List<User> users2 = jdbcTemplate.query(sqlQuery1, userDbStorage::makeUser, friendId);
-        if (users2.size() != 1) {
-            throw new StorageException("Пользователя с таким friendId нет в базе данных");
-        }
+    public void addFriend(long userId, long friendId) {
         String sqlQuery = "insert into FRIENDSHIP (USER_ID, FRIEND_ID, FRIEND_STATUS) values (?, ?, ?)";
         jdbcTemplate.update(sqlQuery, userId, friendId, true);
     }
@@ -41,7 +29,7 @@ public class FriendDbStorage implements FriendStorage{
         return jdbcTemplate.update(sqlQuery, userId, friendId) > 0;
     }
 
-    @Override
+    /* @Override
     public Collection<User> printCommonFriends(long userId, long friendId) {
         String sql1 = "select u.USER_ID, u.EMAIL, u.LOGIN, u.USER_NAME, u.BIRTHDAY "
                 +"from USERS as u INNER JOIN FRIENDSHIP as fr ON u.USER_ID = fr.FRIEND_ID where fr.USER_ID = ? "+
@@ -60,16 +48,19 @@ public class FriendDbStorage implements FriendStorage{
                 "join (select * from FRIENDSHIP where FRIENDSHIP.USER_ID = ? " +
                 "AND FRIENDSHIP.FRIEND_STATUS = true) as fr2 "+
                 "ON fr1.FRIEND_ID = fr2.FRIEND_ID";
-        List<User> users = jdbcTemplate.query(sqlQuery, userDbStorage::makeUser, userId, friendId); */
+        List<User> users = jdbcTemplate.query(sqlQuery, userDbStorage::makeUser, userId, friendId);
         return users1;
-    }
+    } */
 
     @Override
-    public Collection<User> findAllFriends(long userId) {
-        String sql = "select u.USER_ID, u.EMAIL, u.LOGIN, u.USER_NAME, u.BIRTHDAY "
+    public Collection<Long> findAllIdFriends(long userId) {
+        String sql = "select FRIEND_ID from FRIENDSHIP where USER_ID = ? AND FRIEND_STATUS = true";
+        List<Long> idFriends = jdbcTemplate.queryForList(sql, Long.class, userId);
+        return idFriends;
+       /* String sql = "select u.USER_ID, u.EMAIL, u.LOGIN, u.USER_NAME, u.BIRTHDAY "
                 +"from USERS as u INNER JOIN FRIENDSHIP as fr ON u.USER_ID = fr.FRIEND_ID where fr.USER_ID = ? "+
                 "AND fr.FRIEND_STATUS = true";
         List<User> users = jdbcTemplate.query(sql, userDbStorage::makeUser, userId);
-        return users;
+        return users; */
     }
 }

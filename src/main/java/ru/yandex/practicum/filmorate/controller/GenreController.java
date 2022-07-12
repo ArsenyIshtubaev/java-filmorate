@@ -21,7 +21,7 @@ public class GenreController {
     }
 
     @GetMapping
-    public Collection<Genre> findAll() {
+    public Collection<Genre> findAll() throws StorageException {
         return genreService.findAll();
     }
     @PostMapping

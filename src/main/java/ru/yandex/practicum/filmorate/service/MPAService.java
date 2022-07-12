@@ -28,7 +28,11 @@ public class MPAService {
     }
 
     public MPA update(MPA mpa) throws StorageException {
-        return mpaStorage.update(mpa);
+        if (findAll().contains(mpa)) {
+            return mpaStorage.update(mpa);
+        } else {
+            throw new StorageException("Данного рейтинга нет в БД");
+        }
     }
     public void deleteAllMPA(){
         mpaStorage.deleteAll();

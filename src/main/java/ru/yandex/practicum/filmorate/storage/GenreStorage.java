@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface GenreStorage {
 
@@ -18,4 +19,6 @@ public interface GenreStorage {
     boolean delete(Integer id);
 
     void deleteAll();
+
+    List<Genre> findGenreByFilmId (long filmId);
 }

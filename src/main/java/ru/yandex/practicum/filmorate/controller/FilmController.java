@@ -8,25 +8,28 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.LikeService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.Collection;
-import java.util.List;
 
 @RestController
 @Slf4j
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
+    private final UserService userService;
     private final LikeService likeService;
+
     @Autowired
-    public FilmController(FilmService filmService, LikeService likeService) {
+    public FilmController(FilmService filmService, LikeService likeService, UserService userService) {
         this.filmService = filmService;
+        this.userService = userService;
         this.likeService = likeService;
     }
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public Collection<Film> findAll() throws StorageException {
         return filmService.findAll();
     }
     @PostMapping
@@ -60,12 +63,17 @@ public class FilmController {
     //DELETE /films/{id}/like/{userId}
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable long id, @PathVariable long userId) throws StorageException {
-        likeService.deleteLike(id, userId);
+        if (filmService.findFilmById(id) != null && userService.findUserById(userId) != null) {
+            likeService.deleteLike(id, userId);
+        } else {
+            throw new StorageException("Не удалось найти лайк при заданных параметрах FilmId = "
+                    + id + ", UserId = " + userId);
+        }
     }
     //GET /films/popular?count={count}
     @GetMapping("/popular")
-    public Collection<Film> printTopFilms(@RequestParam(defaultValue = "10") int count){
-        return likeService.printTopFilms(count);
+    public Collection<Film> printTopFilms(@RequestParam(defaultValue = "10") int count) throws StorageException {
+        return filmService.printTopFilms(count);
     }
 
 }

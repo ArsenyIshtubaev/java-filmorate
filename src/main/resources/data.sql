@@ -10,4 +10,3 @@ MERGE INTO "GENRE" ("GENRE_ID", "GENRE") VALUES (3, 'Мультфильм');
 MERGE INTO "GENRE" ("GENRE_ID", "GENRE") VALUES (4, 'Триллер');
 MERGE INTO "GENRE" ("GENRE_ID", "GENRE") VALUES (5, 'Документальный');
 MERGE INTO "GENRE" ("GENRE_ID", "GENRE") VALUES (6, 'Боевик');
-

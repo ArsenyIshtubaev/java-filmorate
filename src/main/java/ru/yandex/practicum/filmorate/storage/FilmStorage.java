@@ -5,12 +5,14 @@ import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
 public interface FilmStorage {
 
-    Collection<Film> findAll();
+    Collection<Film> findAll() throws StorageException;
 
     Film create(Film film);
 
@@ -21,5 +23,7 @@ public interface FilmStorage {
     boolean delete(long id);
 
     void deleteAll();
+
+    Film makeFilm(ResultSet rs, int rowNum) throws SQLException, StorageException;
 
 }

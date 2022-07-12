@@ -64,7 +64,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) throws StorageException {
-        if (findAll().contains(user)) {
             String sqlQuery = "update USERS set " +
                     "EMAIL = ?, LOGIN = ?, USER_NAME = ?, BIRTHDAY = ? " +
                     "where USER_ID = ?";
@@ -75,9 +74,6 @@ public class UserDbStorage implements UserStorage {
                     , Date.valueOf(user.getBirthday())
                     , user.getId());
             return user;
-        } else {
-            throw new StorageException("Данного пользователя нет в БД");
-        }
     }
 
     @Override
