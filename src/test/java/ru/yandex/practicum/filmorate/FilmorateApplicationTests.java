@@ -1,213 +1,74 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.Before;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exceptions.IsInStorageException;
 import ru.yandex.practicum.filmorate.exceptions.StorageException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.GenreService;
+import ru.yandex.practicum.filmorate.service.MPAService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.*;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.time.LocalDate;
-import java.util.Set;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
 
-    private Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
-    private final FilmController filmController;
-
-    private final UserController userController;
-
-    @Autowired
-    public FilmorateApplicationTests(FilmController filmController, UserController userController) {
-        this.filmController = filmController;
-        this.userController = userController;
-    }
-
-    @AfterEach
-    public void clearStorage(){
-        filmController.deleteAllFilms();
-        userController.deleteAllUsers();
-    }
+    private final UserService userService;
+    private final FilmService filmService;
+    private final MPAService mpaService;
+    private final GenreService genreService;
 
     @Test
-    void contextLoads() {
-    }
-
-    @Test
-    public void shouldReturnFilmWithPost() throws ValidationException, IsInStorageException {
-        Film film = filmController.create(Film.builder().id(1l).name("film1").description("Описание")
-                .releaseDate(LocalDate.of(2012, 12, 5))
-                .duration(2)
-                .build());
-        assertEquals(film.getId(), 1l);
-    }
-
-    @Test
-    public void shouldReturnFilmWithPut() throws ValidationException, IsInStorageException, StorageException {
-        Film film = filmController.create(Film.builder().id(1l).name("film1").description("Описание")
-                .releaseDate(LocalDate.of(2012, 12, 5))
-                .duration(2)
-                .build());
-        film.setDescription("Описание2");
-        Film film2 = filmController.update(film);
-        assertEquals(film, film2);
-        assertEquals(filmController.findAll().size(), 1);
-    }
-
-    @Test
-    public void shouldReturnExceptionWithIncorreсtName() throws ValidationException, IsInStorageException {
-        Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
-                    .releaseDate(LocalDate.of(2012, 12, 5))
-                    .duration(2)
-                    .build());
-            Set<ConstraintViolation<Film>> violations = validator.validate(film);
-            assertFalse(violations.isEmpty());
-    }
-
-    @Test
-    public void shouldReturnExceptionWithLenghtDescription201() throws ValidationException, IsInStorageException {
-        StringBuilder str = new StringBuilder("");
-        while (str.length() != 201) {
-            str.append("r");
-        }
-        Film film = filmController.create(Film.builder().id(1l).name(" ").description(String.valueOf(str))
-                    .releaseDate(LocalDate.of(2012, 12, 5))
-                    .duration(2)
-                    .build());
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-    }
-
-    @Test
-    public void shouldReturnFilmWithDate28_12_1895() throws ValidationException, IsInStorageException {
-        Film film = filmController.create(Film.builder().id(1l).name("film1").description("Описание")
-                .releaseDate(LocalDate.of(1895, 12, 28))
-                .duration(2)
-                .build());
-        assertEquals(film.getId(), 1l);
-    }
-
-    @Test
-    public void shouldReturnExceptionWithDateBefore28_12_1895() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            filmController.create(Film.builder().id(1l).name(" ").description("Описание")
-                    .releaseDate(LocalDate.of(1895, 11, 5))
-                    .duration(2)
-                    .build());
-        });
-        assertNotNull(thrown.getMessage());
-    }
-
-    @Test
-    public void shouldReturnExceptionWithDurationZero() throws ValidationException, IsInStorageException {
-        Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
-                    .releaseDate(LocalDate.of(2012, 12, 5))
-                    .duration(0)
-                    .build());
-            Set<ConstraintViolation<Film>> violations = validator.validate(film);
-            assertFalse(violations.isEmpty());
-    }
-    @Test
-    public void shouldReturnExceptionWithDurationNegative() throws ValidationException, IsInStorageException {
-        Film film = filmController.create(Film.builder().id(1l).name(" ").description("Описание")
-                .releaseDate(LocalDate.of(2012, 12, 5))
-                .duration(-2)
-                .build());
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        assertFalse(violations.isEmpty());
-    }
-
-    @Test
-    public void shouldReturnUserWithPost() throws ValidationException, IsInStorageException {
-        User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
+    public void testUserStorage() throws StorageException, ValidationException {
+        User user = userService.create(User.builder().email("user@yandex.ru").login("login")
                 .name("Ivan")
                 .birthday(LocalDate.of(1992, 9, 20))
                 .build());
-        assertEquals(user.getId(), 1l);
+        assertEquals(userService.findUserById(1), user);
+        assertEquals(user.getEmail(), "user@yandex.ru");
+        assertEquals(userService.findAll().size(), 1);
+        user.setEmail("ya123@ya.ru");
+        userService.update(user);
+        assertEquals("ya123@ya.ru", userService.findUserById(user.getId()).getEmail());
+        userService.deleteUserById(user.getId());
     }
 
     @Test
-    public void shouldReturnUserWithPut() throws ValidationException, StorageException, IsInStorageException {
-        User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
-                .name("Ivan")
-                .birthday(LocalDate.of(1992, 9, 20))
+    public void testFilmStorage() throws StorageException, ValidationException {
+        Film film = filmService.create(Film.builder().name("film1").description("Описание")
+                .releaseDate(LocalDate.of(2012, 12, 5))
+                .duration(2)
+                .mpa(mpaService.findMPAById(1))
                 .build());
-        user.setLogin("login1");
-        User user1 = userController.update(user);
-        assertEquals(user, user1);
-        assertEquals(userController.findAll().size(), 1);
-    }
-
-    @Test
-    public void shouldReturnExceptionWithEmptyEmail() throws ValidationException, IsInStorageException {
-        User user = userController.create(User.builder().id(1l).email(" ").login("login")
-                    .name("Ivan")
-                    .birthday(LocalDate.of(1992, 9, 20))
-                    .build());
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
+        assertEquals(filmService.findFilmById(1l), film);
+        assertEquals(film.getName(), "film1");
+        assertEquals(filmService.findAll().size(), 1);
+        film.setName("film2");
+        filmService.update(film);
+        assertEquals("film2", filmService.findFilmById(film.getId()).getName());
     }
     @Test
-    public void shouldReturnExceptionWithIncorreсtEmail() throws ValidationException, IsInStorageException {
-            User user = userController.create(User.builder().id(1l).email("user.yandex.ru").login("login")
-                    .name("Ivan")
-                    .birthday(LocalDate.of(1992, 9, 20))
-                    .build());
-            Set<ConstraintViolation<User>> violations = validator.validate(user);
-            assertFalse(violations.isEmpty());
+    public void testMPAStorage() throws StorageException {
+        assertEquals(mpaService.findMPAById(1).getName(), "G");
+        assertEquals(mpaService.findAll().size(), 5);
     }
     @Test
-    public void shouldReturnExceptionWithIncorreсtLogin() throws ValidationException, IsInStorageException {
-            User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login(" ")
-                    .name("Ivan")
-                    .birthday(LocalDate.of(1992, 9, 20))
-                    .build());
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
+    public void testGenresStorage() throws StorageException {
+        assertEquals(genreService.findGenreById(1).getName(), "Комедия");
+        assertEquals(genreService.findAll().size(), 6);
     }
-    @Test
-    public void shouldReturnExceptionWithIncorreсtLogin2() throws ValidationException {
-        Throwable thrown = assertThrows(ValidationException.class, () -> {
-            userController.create(User.builder().id(1l).email("user@yandex.ru").login("log in ")
-                            .name("Ivan")
-                            .birthday(LocalDate.of(1992, 9, 20))
-                            .build());
-        });
-        assertNotNull(thrown.getMessage());
-    }
-    @Test
-    public void shouldReturnLoginWithEmptyName() throws ValidationException, IsInStorageException {
-        User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
-                .name("")
-                .birthday(LocalDate.of(1992, 9, 20))
-                .build());
-        assertEquals(user.getName(), user.getLogin());
-    }
-    @Test
-    public void shouldReturnNullWithIncorreсtBirthday() throws ValidationException, IsInStorageException {
-        User user = userController.create(User.builder().id(1l).email("user@yandex.ru").login("login")
-                    .name("Ivan")
-                    .birthday(LocalDate.of(2100, 9, 20))
-                    .build());
-            Set<ConstraintViolation<User>> violations = validator.validate(user);
-            assertFalse(violations.isEmpty());
-    }
-
 }

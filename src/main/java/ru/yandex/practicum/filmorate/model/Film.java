@@ -1,41 +1,51 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 
 @Getter
 @Setter
-@AllArgsConstructor
 @Builder
 public class Film {
 
-    private Long id;
+    private long id;
     @NotBlank
-    private final String name;
+    private String name;
     @Size(min = 1, max = 200)
     private String description;
-    private final LocalDate releaseDate;
+    private LocalDate releaseDate;
     @Positive
     private Integer duration;
-    private final Set<Long> likes = new HashSet<>();
+    private MPA mpa;
+    private List<Genre> genres;
+
+    public Film(long id, String name, String description, LocalDate releaseDate, Integer duration, MPA mpa, List<Genre> genres) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.mpa = mpa;
+        this.genres = genres;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Film film = (Film) o;
-        return Objects.equals(name, film.name) && Objects.equals(releaseDate, film.releaseDate) && Objects.equals(duration, film.duration);
+        return id == film.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, releaseDate, duration);
+        return Objects.hash(id);
     }
 }

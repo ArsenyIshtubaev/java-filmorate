@@ -6,16 +6,14 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @Builder
 public class User {
-    private Long id;
+
+    private long id;
     @Email
     private String email;
     @NotBlank
@@ -23,18 +21,27 @@ public class User {
     private String name;
     @Past
     private final LocalDate birthday;
-    private Set<Long> friends = new HashSet<>();
+    //private Map<String, Boolean> friends;
+
+
+    public User(long id, String email, String login, String name, LocalDate birthday) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return email.equals(user.email);
+        return Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(email);
+        return Objects.hash(id);
     }
 }
